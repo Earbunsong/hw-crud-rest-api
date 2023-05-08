@@ -10,26 +10,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 @RestControllerAdvice
 public class ApiException {
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+
+//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+//    @ExceptionHandler(NoSuchElementException.class)
+//    public BaseError<?> handleNoSuchFileException(NoSuchElementException e){
+//        return BaseError.builder()
+//                .message("something when worng ......please check !!!!!!!")
+//                .status(false)
+//                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                .errors(e.getReason())
+//                .build();
+
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseError<?> handleValidationException(MethodArgumentNotValidException e ){
         List<Map<String, String>> errors = new ArrayList<>();
-
-
-        for (FieldError error :  e.getFieldErrors()) {
-            Map<String ,String> errorDetails = new HashMap<>();
-            errorDetails.put("name", error.getField());
-            errorDetails.put("message", error.getDefaultMessage());
-            errors.add(errorDetails);
-        }
         return BaseError.builder()
                 .status(false)
                 .code(HttpStatus.BAD_REQUEST.value())
@@ -46,7 +47,7 @@ public class ApiException {
     @ExceptionHandler(ResponseStatusException.class)
     public BaseError<?> handleServiceImpl(ResponseStatusException e){
         return BaseError.builder()
-                .message("something when worng ......please check !!!!!!!")
+                .message("something when wording ......please check !!!!!!!")
                 .status(false)
                 .code(e.getStatusCode().value())
                 .errors(e.getReason())

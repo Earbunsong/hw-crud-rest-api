@@ -1,16 +1,21 @@
 package com.example.mbanking.api.accounttype;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 @Service
-@RequiredArgsConstructor
 public class AccountTypeServiceImpl implements AccountTypeService {
     public final AccountTypeMapper accountTypeMapper;
     private final AccountTypeMapStruct accountTypeMapStruct;
+
+    public AccountTypeServiceImpl(AccountTypeMapper accountTypeMapper, AccountTypeMapStruct accountTypeMapStruct) {
+        this.accountTypeMapper = accountTypeMapper;
+        this.accountTypeMapStruct = accountTypeMapStruct;
+
+    }
+
     @Override
     public List<AccountTypeDto> findAll() {
         List<AccountType> accountTypes = accountTypeMapper.select();
