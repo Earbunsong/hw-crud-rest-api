@@ -1,19 +1,25 @@
 package com.example.mbanking.utils;
 
 import com.example.mbanking.api.file.FileDto;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
 @Component
+@Getter
 public class FileUtil {
 
     @Value("${file.server-path}")
@@ -22,10 +28,45 @@ public class FileUtil {
     @Value("${file.base-url}")
     private String fileBaseUrl;
 
+    @Value("${file.download-url}")
+    private String fileDownloadUrl;
+
+
+    public void deleteByNane(String  name){
+        Path path = Paths.get(fileServerPath + name);
+        try {
+         boolean isDeleted =   Files.deleteIfExists(path);
+         if (!isDeleted){
+             throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                     "File name is not found");
+            }
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "File is failed to delete");
+        }
+    }
+
+    public Resource findByName(String name){
+        Path path = Paths.get(fileServerPath+ name);
+        try {
+            Resource resource = new UrlResource(path.toUri());
+            if (resource.exists()){
+                return resource;
+            }
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "File is not found");
+
+        } catch (MalformedURLException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+        }
+    }
+
     public FileDto upload(MultipartFile file){
 
-        int lastDotIndex = file.getOriginalFilename().lastIndexOf(".");
-        String extension = file.getOriginalFilename().substring(lastDotIndex + 1);
+        String extension = getExtension(file.getOriginalFilename());
+
         long size = file.getSize();
         String name = String.format("%s.%s",UUID.randomUUID().toString(), extension);
         String url = String.format("%s%s", fileBaseUrl, name);
@@ -36,6 +77,7 @@ public class FileUtil {
             return FileDto.builder()
                     .name(name)
                     .extension(extension)
+                    .downloadUrl(String.format("%s%s" ,fileDownloadUrl,name))
                     .size(size)
                     .url(url)
                     .build() ;
@@ -44,5 +86,9 @@ public class FileUtil {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Upload file failed , please contact developer [12345677890]!");
         }
+    }
+    public String getExtension(String fileName){
+        int lastDotIndex = fileName.lastIndexOf(".");
+        return fileName.substring(lastDotIndex + 1);
     }
 }

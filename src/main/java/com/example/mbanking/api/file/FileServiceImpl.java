@@ -5,17 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +33,31 @@ public class FileServiceImpl implements  FileService {
 
     @Value("${file.base-url}")
     private String fileBaseUrl;
+
+    @Value("${file.download-url}")
+    private String fileDownloadUrl;
+
     private FileUtil fileUtil;
+
+
+    @Override
+    public void deletedByName(String name) {
+        fileUtil.deleteByNane(name);
+    }
+
+    @Override
+    public FileDto findByName(String name) throws IOException {
+
+        Resource resource = fileUtil.findByName(name);
+        return FileDto.builder()
+                .name(resource.getFilename())
+                .extension(fileUtil.getExtension(resource.getFilename()))
+                .url(String.format("%s%s" ,fileUtil.getFileBaseUrl(),resource.getFilename()))
+                .downloadUrl(String.format("%s%s" ,fileDownloadUrl,name))
+                .size(resource.contentLength())
+                .build();
+
+    }
 
     @Autowired
     public void setFileUtil(FileUtil fileUtil) {
@@ -47,22 +66,7 @@ public class FileServiceImpl implements  FileService {
 
     @Override
     public Resource downloadFile(String name) {
-        File file = new File(fileServerPath);
-        File [] files = file.listFiles();
-        Path path ;
-        Resource resource;
-        try {
-            for(File file1 : files){
-
-                if(file1.getName().startsWith(name)){
-                    path  = Paths.get(fileServerPath + file1.getName()).toAbsolutePath().normalize();
-                   return new UrlResource(path.toUri());
-                }
-            }
-        } catch (MalformedURLException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"File is not found.");
-        }
-        return null;
+         return fileUtil.findByName(name);
     }
 
 
