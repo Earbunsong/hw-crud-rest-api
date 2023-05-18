@@ -26,7 +26,6 @@ public interface UserMapper {
     @ResultMap("useResultMap")
     List<User> select();
 
-
     @Select("SELECT EXISTS(SELECT * FROM users WHERE id = #{id})")
     boolean existById(@Param("id") Integer id);
 
@@ -42,6 +41,11 @@ public interface UserMapper {
     List<User> selectByName(@Param("name") String name);
     @SelectProvider(type = UserProvider.class,method = "buildSelectByStudentCardId")
     Optional<User> selectByStudentCardId(@Param("studentCardId") String studentCardId);
+
+    @Select("SELECT EXISTS(SELECT * FROM users WHERE email = #{email})")
+    boolean existByEmail(@Param("email") String email);
+    @Select("SELECT EXISTS(SELECT * FROM roles WHERE id = #{roleId})")
+    boolean checkRoleId(Integer roleId);
 }
 
 

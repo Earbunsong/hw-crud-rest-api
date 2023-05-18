@@ -50,7 +50,7 @@ public class UserProvider {
         return new SQL(){{
             SELECT("*");
             FROM("users");
-            WHERE("id=#{id}" ,"is_deleted = FALSE");
+            WHERE("id = #{id}" ,"is_deleted = FALSE");
 
         }}.toString();
     }
