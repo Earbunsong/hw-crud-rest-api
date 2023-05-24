@@ -1,5 +1,7 @@
 package com.example.mbanking.api.auth;
 
+import com.example.mbanking.api.auth.web.AuthDto;
+import com.example.mbanking.api.auth.web.LogInDto;
 import com.example.mbanking.api.auth.web.RegisterDto;
 import com.example.mbanking.base.BaseRest;
 import jakarta.validation.Valid;
@@ -17,6 +19,21 @@ import java.time.LocalDateTime;
 public class AuthRestController {
 
     private final AuthService authService;
+
+    @PostMapping("/login")
+    public BaseRest<?> login(@Valid @RequestBody LogInDto logInDto) {
+
+        // call service
+        AuthDto authDto = authService.login(logInDto);
+
+        return BaseRest.builder()
+                .status(true)
+                .code(HttpStatus.OK.value())
+                .message("You have been logged in successfully")
+                .timestamp(LocalDateTime.now())
+                .data(authDto)
+                .build();
+    }
 
     @PostMapping("/register")
     public BaseRest<?> register(@Valid @RequestBody RegisterDto registerDto) {

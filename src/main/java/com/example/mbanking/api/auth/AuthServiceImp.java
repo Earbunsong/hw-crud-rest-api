@@ -1,5 +1,7 @@
 package com.example.mbanking.api.auth;
 
+import com.example.mbanking.api.auth.web.AuthDto;
+import com.example.mbanking.api.auth.web.LogInDto;
 import com.example.mbanking.api.auth.web.RegisterDto;
 import com.example.mbanking.api.user.User;
 import com.example.mbanking.api.user.UserMapStruct;
@@ -9,11 +11,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Base64;
 import java.util.UUID;
 @Transactional
 @Service
@@ -25,6 +31,7 @@ public class AuthServiceImp implements AuthService{
     private final UserMapStruct userMapStruct;
     private final PasswordEncoder encoder;
     private final MainUtil mainUtil;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
 
     @Value("${spring.mail.username}")
     private String appMail;
@@ -87,5 +94,23 @@ public class AuthServiceImp implements AuthService{
             authMapper.verify(email, verifiedCode);
         }
 
+    }
+
+    @Override
+    public AuthDto login(LogInDto logInDto) {
+        Authentication authentication = new UsernamePasswordAuthenticationToken(logInDto.email(),logInDto.password());
+       authentication = daoAuthenticationProvider.authenticate(authentication);
+
+        log.info("Authentication: {}", authentication);
+        log.info("Authentication: {}", authentication.getName());
+        log.info("Authentication: {}", authentication.getCredentials());
+
+        // Logic on basic authorization header
+        String basicAuthFormat = authentication.getName() + ":" + authentication.getCredentials();
+        String encoding = Base64.getEncoder().encodeToString(basicAuthFormat.getBytes());
+
+        log.info("Basic {}", encoding);
+
+        return new AuthDto(String.format("Basic %s", encoding));
     }
 }
