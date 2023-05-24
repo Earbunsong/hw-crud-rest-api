@@ -1,5 +1,6 @@
-package com.example.mbanking.api.auth;
+package com.example.mbanking.api.auth.web;
 
+import com.example.mbanking.api.auth.AuthService;
 import com.example.mbanking.api.auth.web.AuthDto;
 import com.example.mbanking.api.auth.web.LogInDto;
 import com.example.mbanking.api.auth.web.RegisterDto;
